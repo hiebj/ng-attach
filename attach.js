@@ -14,16 +14,20 @@
             alignLoop();
 
             function alignLoop() {
-                if (positionChanged()) {
-                    align();
-                }
+                anchorRect = anchorEl[0].getBoundingClientRect();
+                align();
                 nextFrame(alignLoop);
             }
 
             function watchPosition() {
-                $scope.$watch(positionChanged, align);
+                $scope.$watch(getAnchorPosition, align);
                 $scope.$watch($attrs.align, align);
                 angular.element($window).on('resize', align);
+            }
+
+            function getAnchorPosition() {
+                anchorRect = anchorEl[0].getBoundingClientRect();
+                return ('x' + anchorRect.left + 'y' + anchorRect.top);
             }
 
             function align() {
@@ -35,14 +39,6 @@
                 if (alignFlags) {
                     alignedEl.css(getAlignmentCSS(alignFlags.split(' ')));
                 }
-            }
-
-            function positionChanged() {
-                var lastRect = anchorRect;
-                anchorRect = anchorEl[0].getBoundingClientRect();
-                // true if it's the first run or if the alignedEl is visible and its rect has changed
-                return !lastRect || (alignedEl[0].offsetWidth > 0 && alignedEl[0].offsetHeight > 0 &&
-                    ('x' + lastRect.left + 'y' + lastRect.top) === ('x' + anchorRect.left + 'y' + anchorRect.top));
             }
 
             function getAlignmentCSS(alignFlags) {
