@@ -1,7 +1,7 @@
 (function() {
     'use strict';
     angular
-        .module('attach', [])
+        .module('cb')
         .directive('attach', attach);
 
     function attach($window, $document) {
@@ -32,13 +32,24 @@
 
             function align() {
                 var alignFlags = $attrs.align ? $scope.$eval($attrs.align) : 'tl bl',
-                    style = alignedEl.attr('style');
-                if (style) {
-                    alignedEl.attr('style', style.replace(/position|top|right|bottom|left[^;]+;/g, ''));
+                    css;
+                if (alignFlags && alignedEl[0].offsetWidth > 0 && alignedEl[0].offsetHeight > 0) {
+                    css = getAlignmentCSS(alignFlags.split(' '));
+                    if (!styleMatches(css, alignedEl)) {
+                        alignedEl.css(css);
+                    }
+                } else {
+                    alignedEl.attr('style', (alignedEl.attr('style') || '')
+                        .replace(/position|top|right|bottom|left[^;]+;/g, ''));
                 }
-                if (alignFlags) {
-                    alignedEl.css(getAlignmentCSS(alignFlags.split(' ')));
-                }
+            }
+
+            function styleMatches(css, el) {
+                var style = el[0].style;
+                return (!css.top || css.top === style.top) &&
+                    (!css.right || css.right === style.right) &&
+                    (!css.bottom || css.bottom === style.bottom) &&
+                    (!css.left || css.left === style.left);
             }
 
             function getAlignmentCSS(alignFlags) {
@@ -80,11 +91,14 @@
                 if (alignedAttach.y === 'bottom') {
                     css[alignedAttach.y] = $window.innerHeight - css[alignedAttach.y];
                 }
-                // add 'px'
-                css[alignedAttach.x] = css[alignedAttach.x] + 'px';
-                css[alignedAttach.y] = css[alignedAttach.y] + 'px';
+                css[alignedAttach.x] = round2(css[alignedAttach.x]) + 'px';
+                css[alignedAttach.y] = round2(css[alignedAttach.y]) + 'px';
                 return css;
             }
+        }
+
+        function round2(number) {
+            return Math.round(number * 100) / 100;
         }
 
         function getAlignedEl($element, $attrs) {
@@ -162,7 +176,7 @@
         }
 
         return {
-            restrict: 'A',
+            restrict: 'AC',
             link: link
         };
     }
