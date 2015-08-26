@@ -22,7 +22,9 @@
             function watchPosition() {
                 $scope.$watch(getAnchorPosition, align);
                 $scope.$watch($attrs.align, align);
-                angular.element($window).on('resize', align);
+                angular.element($window).on('resize', function() {
+                    align();
+                });
             }
 
             function getAnchorPosition() {
@@ -33,7 +35,7 @@
             function align() {
                 var alignFlags = $attrs.align ? $scope.$eval($attrs.align) : 'tl bl',
                     css;
-                if (alignFlags && alignedEl[0].offsetWidth > 0 && alignedEl[0].offsetHeight > 0) {
+                if (alignFlags) {
                     css = getAlignmentCSS(alignFlags.split(' '));
                     if (!styleMatches(css, alignedEl)) {
                         alignedEl.css(css);
@@ -58,11 +60,12 @@
                     },
                     alignedAttach = getAttachment(alignFlags[0]),
                     anchorAttach = getAttachment(alignFlags[1]),
-                    alignedRect = alignedEl[0].getBoundingClientRect();
+                    alignedRect = alignedEl[0].getBoundingClientRect(),
+                    windowRect = getWindowRect();
 
                 // set position of alignedEl's attachment to match the absolute position of the anchorEl's attachment
-                css[alignedAttach.x] = anchorRect[anchorAttach.x] + $window.scrollX;
-                css[alignedAttach.y] = anchorRect[anchorAttach.y] + $window.scrollY;
+                css[alignedAttach.x] = anchorRect[anchorAttach.x];
+                css[alignedAttach.y] = anchorRect[anchorAttach.y];
                 // check if we need to center the attachment points
                 if (alignedAttach.centerX) {
                     css[alignedAttach.x] = css[alignedAttach.x] -
@@ -86,15 +89,29 @@
                 }
                 // check if we need to invert the value to be relative to the correct boundary
                 if (alignedAttach.x === 'right') {
-                    css[alignedAttach.x] = $window.innerWidth - css[alignedAttach.x];
+                    css[alignedAttach.x] = windowRect.width - css[alignedAttach.x];
                 }
                 if (alignedAttach.y === 'bottom') {
-                    css[alignedAttach.y] = $window.innerHeight - css[alignedAttach.y];
+                    css[alignedAttach.y] = windowRect.height - css[alignedAttach.y];
                 }
                 css[alignedAttach.x] = round2(css[alignedAttach.x]) + 'px';
                 css[alignedAttach.y] = round2(css[alignedAttach.y]) + 'px';
                 return css;
             }
+        }
+
+        function getWindowRect() {
+            var rect = {
+                width: $window.innerWidth,
+                height: $window.innerHeight
+            };
+            if (typeof rect.width === 'undefined') {
+                rect = {
+                    width: $document[0].body.clientWidth,
+                    height: $document[0].body.clientHeight
+                };
+            }
+            return rect;
         }
 
         function round2(number) {
