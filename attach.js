@@ -1,7 +1,7 @@
 (function() {
     'use strict';
     angular
-        .module('attach')
+        .module('attach', [])
         .directive('attach', attach);
 
     function attach($window, $document) {
