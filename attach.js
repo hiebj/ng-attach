@@ -48,7 +48,7 @@
 
             function resetStyle() {
                 alignedEl.attr('style', (alignedEl.attr('style') || '')
-                    .replace(/position|top|right|bottom|left[^;]+;/g, ''));
+                    .replace(/(position|top|right|bottom|left)[^;]+;/g, ''));
             }
 
             function styleMatches(css, el) {
