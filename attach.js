@@ -12,6 +12,7 @@
                 nextFrame = getNextFrameFn() || watchPosition;
 
             alignLoop();
+            $scope.$watch($attrs.align, align);
 
             function alignLoop() {
                 anchorRect = anchorEl[0].getBoundingClientRect();
@@ -21,7 +22,6 @@
 
             function watchPosition() {
                 $scope.$watch(getAnchorPosition, align);
-                $scope.$watch($attrs.align, align);
                 angular.element($window).on('resize', function() {
                     align();
                 });
@@ -38,12 +38,17 @@
                 if (alignFlags) {
                     css = getAlignmentCSS(alignFlags.split(' '));
                     if (!styleMatches(css, alignedEl)) {
+                        resetStyle();
                         alignedEl.css(css);
                     }
                 } else {
-                    alignedEl.attr('style', (alignedEl.attr('style') || '')
-                        .replace(/position|top|right|bottom|left[^;]+;/g, ''));
+                    resetStyle();
                 }
+            }
+
+            function resetStyle() {
+                alignedEl.attr('style', (alignedEl.attr('style') || '')
+                    .replace(/position|top|right|bottom|left[^;]+;/g, ''));
             }
 
             function styleMatches(css, el) {
